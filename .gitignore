@@ -1,0 +1,40 @@
+## Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+.Python
+.venv/
+venv/
+env/
+ENV/
+pip-wheel-metadata/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+## Jupyter
+.ipynb_checkpoints/
+
+## Environment files
+.env
+.env.*
+
+## Frontend
+frontend/node_modules/
+frontend/dist/
+
+## ML / experiment outputs
+backend/artifacts/
+backend/mlruns/
+backend/great_expectations/uncommitted/
+
+## OS / editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
