@@ -1,40 +1,84 @@
-## Python
+# ----------------------------
+# Python
+# ----------------------------
 __pycache__/
 *.py[cod]
+*.pyo
 *.pyd
 *.so
-.Python
-.venv/
-venv/
-env/
-ENV/
-pip-wheel-metadata/
 *.egg-info/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
 .coverage
-coverage.xml
 htmlcov/
 
-## Jupyter
-.ipynb_checkpoints/
+# ----------------------------
+# Virtual Environments
+# ----------------------------
+venv/
+env/
+.venv/
 
-## Environment files
+# ----------------------------
+# Environment Variables
+# ----------------------------
 .env
 .env.*
 
-## Frontend
-frontend/node_modules/
-frontend/dist/
-
-## ML / experiment outputs
-backend/artifacts/
+# ----------------------------
+# MLflow
+# ----------------------------
 backend/mlruns/
-backend/great_expectations/uncommitted/
 
-## OS / editor noise
+# ----------------------------
+# Model Artifacts
+# ----------------------------
+backend/artifacts/
+!backend/artifacts/.gitkeep
+
+# ----------------------------
+# Jupyter
+# ----------------------------
+.ipynb_checkpoints/
+
+# ----------------------------
+# VS Code
+# ----------------------------
+.vscode/
+
+# ----------------------------
+# JetBrains
+# ----------------------------
+.idea/
+
+# ----------------------------
+# OS Files
+# ----------------------------
 .DS_Store
 Thumbs.db
-.idea/
-.vscode/
+
+# ----------------------------
+# Logs
+# ----------------------------
+*.log
+
+# ----------------------------
+# Node
+# ----------------------------
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# ----------------------------
+# Docker
+# ----------------------------
+*.tar
+
+# ----------------------------
+# Temporary Files
+# ----------------------------
+tmp/
+temp/
+*.tmp
+node_modules/

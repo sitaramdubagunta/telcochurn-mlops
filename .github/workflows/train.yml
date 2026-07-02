@@ -1,0 +1,46 @@
+name: Model Training
+
+on:
+  workflow_dispatch:
+
+jobs:
+  train-model:
+    name: Train XGBoost Model
+
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Train model
+        run: |
+          python -m src.models.train
+
+      - name: Upload trained model
+        uses: actions/upload-artifact@v4
+        with:
+          name: telecom-churn-model
+          path: backend/artifacts/model.pkl
+
+      - name: Upload MLflow runs
+        uses: actions/upload-artifact@v4
+        with:
+          name: mlflow-runs
+          path: backend/mlruns/

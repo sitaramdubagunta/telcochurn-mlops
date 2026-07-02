@@ -1,55 +1,55 @@
 """
-Telco Customer Churn - Feature Engineering
-
-Steps:
-- Load cleaned dataset
-- Encode target variable
-- One-hot encode categorical features
-- Split data into train and test sets
+Feature preprocessing pipeline for the Telco Customer Churn dataset.
 """
 
-from pathlib import Path
-
-import pandas as pd
-from sklearn.model_selection import train_test_split
-
-INPUT_PATH = Path("./data/processed/cleaned_telco.csv")
+from sklearn.compose import ColumnTransformer
+from sklearn.impute import SimpleImputer
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder
 
 
-def build_features():
-    df = pd.read_csv(INPUT_PATH)
+def create_preprocessor(X):
+    """
+    Create the preprocessing pipeline.
 
-    df["Churn"] = df["Churn"].map({
-        "No": 0,
-        "Yes": 1
-    })
+    Parameters
+    ----------
+    X : pandas.DataFrame
+        Feature dataframe before preprocessing.
 
-    X = df.drop(columns=["Churn"])
-    y = df["Churn"]
+    Returns
+    -------
+    ColumnTransformer
+        Preprocessing pipeline.
+    """
 
-    X = pd.get_dummies(
-        X,
-        drop_first=True,
-        dtype=int
+    categorical_features = X.select_dtypes(include=["object"]).columns.tolist()
+    numerical_features = X.select_dtypes(exclude=["object"]).columns.tolist()
+
+    numeric_pipeline = Pipeline(
+        steps=[
+            ("imputer", SimpleImputer(strategy="median")),
+        ]
     )
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        X,
-        y,
-        test_size=0.2,
-        random_state=42,
-        stratify=y
+    categorical_pipeline = Pipeline(
+        steps=[
+            ("imputer", SimpleImputer(strategy="most_frequent")),
+            (
+                "encoder",
+                OneHotEncoder(
+                    handle_unknown="ignore",
+                    sparse_output=False,
+                ),
+            ),
+        ]
     )
 
-    print("=" * 50)
-    print("Feature Engineering Complete")
-    print("=" * 50)
-    print(f"Training Samples : {X_train.shape[0]}")
-    print(f"Testing Samples  : {X_test.shape[0]}")
-    print(f"Number of Features : {X_train.shape[1]}")
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ("num", numeric_pipeline, numerical_features),
+            ("cat", categorical_pipeline, categorical_features),
+        ]
+    )
 
-    return X_train, X_test, y_train, y_test
-
-
-if __name__ == "__main__":
-    build_features()
+    return preprocessor
