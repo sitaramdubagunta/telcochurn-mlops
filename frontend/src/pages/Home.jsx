@@ -137,28 +137,43 @@ export default function Home() {
   const [error, setError] = useState(null);
   const [history, setHistory] = useState([]);
 
-  const loadDashboardData = async () => {
-    setMetadataLoading(true);
-    setError(null);
+  useEffect(() => {
+  let cancelled = false;
 
+  async function loadDashboardData() {
     try {
+      if (!cancelled) {
+        setMetadataLoading(true);
+        setError(null);
+      }
+
       const [metadataResponse, sampleResponse] = await Promise.all([
         getMetadata(),
         getSamplePayload(),
       ]);
-      setMetadata(metadataResponse);
-      setSamplePayload(sampleResponse);
-    } catch (requestError) {
-      setError(requestError?.message || 'Unable to reach the prediction API.');
-      setMetadata(null);
-    } finally {
-      setMetadataLoading(false);
-    }
-  };
 
-  useEffect(() => {
-    loadDashboardData();
-  }, []);
+      if (!cancelled) {
+        setMetadata(metadataResponse);
+        setSamplePayload(sampleResponse);
+      }
+    } catch (requestError) {
+      if (!cancelled) {
+        setError(requestError?.message || "Unable to reach the prediction API.");
+        setMetadata(null);
+      }
+    } finally {
+      if (!cancelled) {
+        setMetadataLoading(false);
+      }
+    }
+  }
+
+  loadDashboardData();
+
+  return () => {
+    cancelled = true;
+  };
+}, []);
 
   const stats = useMemo(() => {
     const metrics = metadata?.metrics || {};
