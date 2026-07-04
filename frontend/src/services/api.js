@@ -12,4 +12,14 @@ export const predictChurn = async (payload) => {
   return data;
 };
 
+export const getMetadata = async () => {
+  const { data } = await api.get("/metadata");
+  return data;
+};
+
+export const getSamplePayload = async () => {
+  const { data } = await api.get("/sample-payload");
+  return data;
+};
+
 export default api;

@@ -1,7 +1,8 @@
 from pathlib import Path
 import pandas as pd
 
-DATA_PATH = Path("../../data/raw/telco_customer_churn.csv")
+BASE_DIR = Path(__file__).resolve().parents[2]
+DATA_PATH = BASE_DIR / "data" / "raw" / "telco_customer_churn.csv"
 
 df = pd.read_csv(DATA_PATH)
 

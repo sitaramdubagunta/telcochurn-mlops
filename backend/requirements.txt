@@ -11,3 +11,5 @@ great-expectations
 pytest
 xgboost
 tabulate
+matplotlib
+httpx

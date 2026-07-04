@@ -1,107 +1,71 @@
-from pathlib import Path
+import logging
+import time
+from contextlib import asynccontextmanager
 
-import joblib
-import pandas as pd
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, roc_auc_score
-from sklearn.model_selection import train_test_split
+from fastapi.responses import JSONResponse
+
+from app.api.routes import router
+from app.core.config import get_settings
+from app.core.logging import configure_logging
+from app.services.model_service import ModelService
+
+configure_logging()
+logger = logging.getLogger(__name__)
+settings = get_settings()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    app.state.model_service = ModelService(settings)
+    logger.info("Application startup complete")
+    yield
+    logger.info("Application shutdown complete")
+
 
 app = FastAPI(
-    title="Telco Customer Churn API",
-    version="1.0.0",
+    title=settings.app_name,
+    version=settings.api_version,
+    lifespan=lifespan,
 )
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
+    allow_origin_regex=settings.cors_origin_regex,
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-MODEL_PATH = Path("./artifacts/model.pkl")
-DATA_PATH = Path("./data/processed/cleaned_telco.csv")
 
-pipeline = joblib.load(MODEL_PATH)
+@app.middleware("http")
+async def request_logging(request: Request, call_next):
+    started_at = time.perf_counter()
+    response = await call_next(request)
+    duration_ms = (time.perf_counter() - started_at) * 1000
+    logger.info(
+        "%s %s -> %s %.2fms",
+        request.method,
+        request.url.path,
+        response.status_code,
+        duration_ms,
+    )
+    return response
 
 
-def load_dataset():
-    df = pd.read_csv(DATA_PATH)
-
-    if "customerID" in df.columns:
-        df = df.drop(columns="customerID")
-
-    df["Churn"] = df["Churn"].map({"No": 0, "Yes": 1}).astype(int)
-
-    X = df.drop(columns="Churn")
-    y = df["Churn"]
-
-    return train_test_split(
-        X,
-        y,
-        test_size=0.2,
-        stratify=y,
-        random_state=42,
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    logger.exception("Unhandled error for %s %s", request.method, request.url.path)
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": {
+                "code": "internal_server_error",
+                "message": "An unexpected error occurred.",
+            }
+        },
     )
 
 
-def build_model_metrics():
-    _, X_test, _, y_test = load_dataset()
-
-    predictions = pipeline.predict(X_test)
-    probabilities = pipeline.predict_proba(X_test)[:, 1]
-
-    return {
-        "accuracy": round(float(accuracy_score(y_test, predictions)), 4),
-        "precision": round(float(precision_score(y_test, predictions)), 4),
-        "recall": round(float(recall_score(y_test, predictions)), 4),
-        "f1": round(float(f1_score(y_test, predictions)), 4),
-        "roc_auc": round(float(roc_auc_score(y_test, probabilities)), 4),
-    }
-
-
-MODEL_METRICS = build_model_metrics()
-
-
-class Customer(BaseModel):
-    gender: str
-    SeniorCitizen: int
-    Partner: str
-    Dependents: str
-    tenure: int
-    PhoneService: str
-    MultipleLines: str
-    InternetService: str
-    OnlineSecurity: str
-    OnlineBackup: str
-    DeviceProtection: str
-    TechSupport: str
-    StreamingTV: str
-    StreamingMovies: str
-    Contract: str
-    PaperlessBilling: str
-    PaymentMethod: str
-    MonthlyCharges: float
-    TotalCharges: float
-
-
-@app.get("/")
-def root():
-    return {"message": "Telco Customer Churn API"}
-
-
-@app.post("/predict")
-def predict(customer: Customer):
-
-    df = pd.DataFrame([customer.model_dump()])
-
-    prediction = pipeline.predict(df)[0]
-    probability = pipeline.predict_proba(df)[0][1]
-
-    return {
-        "prediction": "Yes" if prediction else "No",
-        "probability": round(float(probability), 4),
-        "metrics": MODEL_METRICS,
-    }
+app.include_router(router)

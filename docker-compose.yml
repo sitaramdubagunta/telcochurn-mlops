@@ -1,0 +1,36 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: churn-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: churn-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  mlflow:
+    image: python:3.11-slim
+    container_name: churn-mlflow
+    working_dir: /mlflow
+    command: >
+      bash -c "pip install mlflow &&
+      mlflow ui --host 0.0.0.0 --port 5000"
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend/mlruns:/mlflow/mlruns
+      - ./backend/mlflow.db:/mlflow/mlflow.db

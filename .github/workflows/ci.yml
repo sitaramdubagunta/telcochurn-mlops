@@ -43,17 +43,25 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Verify FastAPI app imports
+      - name: Formatting check
         run: |
-          python -c "from app.main import app"
+          python -m compileall app src tests
 
-      - name: Verify training module
+      - name: Train model
         run: |
-          python -c "from src.models.train import train"
+          python -m src.models.train
 
-      - name: Verify prediction module
+      - name: Verify artifact exists
         run: |
-          python -c "from src.models.predict import predict"
+          test -f artifacts/model.pkl
+
+      - name: Smoke prediction
+        run: |
+          python -m src.models.predict
+
+      - name: Run tests
+        run: |
+          pytest -q
 
   frontend:
     name: Frontend Checks
@@ -77,6 +85,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Lint frontend
+        run: npm run lint
 
       - name: Build frontend
         run: npm run build

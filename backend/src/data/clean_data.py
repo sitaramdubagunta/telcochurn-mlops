@@ -16,11 +16,12 @@ Cleaning Steps:
 - Save cleaned dataset
 """
 
-from pathlib import Path
 import pandas as pd
+from pathlib import Path
 
-RAW_DATA_PATH = Path("../../data/raw/telco_customer_churn.csv")
-PROCESSED_DATA_PATH = Path("../../data/processed/cleaned_telco.csv")
+BASE_DIR = Path(__file__).resolve().parents[2]
+RAW_DATA_PATH = BASE_DIR / "data" / "raw" / "telco_customer_churn.csv"
+PROCESSED_DATA_PATH = BASE_DIR / "data" / "processed" / "cleaned_telco.csv"
 
 
 def clean_data():
