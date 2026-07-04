@@ -84,3 +84,4 @@ temp/
 node_modules/
 backend/mlflow.db
 mlflow.db
+backend/mlruns/
