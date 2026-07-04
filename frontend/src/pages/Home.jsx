@@ -5,10 +5,7 @@ import Footer from '../components/Footer';
 import CustomerForm from '../components/CustomerForm';
 import PredictionCard from '../components/PredictionCard';
 import { getMetadata, getSamplePayload, predictChurn } from '../services/api';
-// eslint-disable-next-line react-hooks/set-state-in-effect
-useEffect(() => {
-  loadDashboardData();
-}, []);
+
 function formatPercent(value) {
   return typeof value === 'number' ? `${(value * 100).toFixed(1)}%` : 'Unavailable';
 }
