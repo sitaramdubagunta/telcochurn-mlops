@@ -5,7 +5,10 @@ import Footer from '../components/Footer';
 import CustomerForm from '../components/CustomerForm';
 import PredictionCard from '../components/PredictionCard';
 import { getMetadata, getSamplePayload, predictChurn } from '../services/api';
-
+// eslint-disable-next-line react-hooks/set-state-in-effect
+useEffect(() => {
+  loadDashboardData();
+}, []);
 function formatPercent(value) {
   return typeof value === 'number' ? `${(value * 100).toFixed(1)}%` : 'Unavailable';
 }
@@ -137,43 +140,28 @@ export default function Home() {
   const [error, setError] = useState(null);
   const [history, setHistory] = useState([]);
 
-  useEffect(() => {
-  let cancelled = false;
+  const loadDashboardData = async () => {
+    setMetadataLoading(true);
+    setError(null);
 
-  async function loadDashboardData() {
     try {
-      if (!cancelled) {
-        setMetadataLoading(true);
-        setError(null);
-      }
-
       const [metadataResponse, sampleResponse] = await Promise.all([
         getMetadata(),
         getSamplePayload(),
       ]);
-
-      if (!cancelled) {
-        setMetadata(metadataResponse);
-        setSamplePayload(sampleResponse);
-      }
+      setMetadata(metadataResponse);
+      setSamplePayload(sampleResponse);
     } catch (requestError) {
-      if (!cancelled) {
-        setError(requestError?.message || "Unable to reach the prediction API.");
-        setMetadata(null);
-      }
+      setError(requestError?.message || 'Unable to reach the prediction API.');
+      setMetadata(null);
     } finally {
-      if (!cancelled) {
-        setMetadataLoading(false);
-      }
+      setMetadataLoading(false);
     }
-  }
-
-  loadDashboardData();
-
-  return () => {
-    cancelled = true;
   };
-}, []);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
 
   const stats = useMemo(() => {
     const metrics = metadata?.metrics || {};
