@@ -31,11 +31,6 @@ env/
 # ----------------------------
 backend/mlruns/
 
-# ----------------------------
-# Model Artifacts
-# ----------------------------
-backend/artifacts/
-!backend/artifacts/.gitkeep
 
 # ----------------------------
 # Jupyter

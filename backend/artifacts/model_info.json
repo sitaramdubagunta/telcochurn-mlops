@@ -1,0 +1,8 @@
+{
+  "model_name": "Telco Customer Churn Classifier",
+  "algorithm": "XGBoostClassifier",
+  "version": "local",
+  "feature_count": 19,
+  "training_timestamp": "2026-07-04T14:55:44.160593+00:00",
+  "artifact_path": "C:\\Users\\srdk7\\Downloads\\mlopsproject\\backend\\artifacts\\model.pkl"
+}
