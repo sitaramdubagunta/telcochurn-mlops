@@ -30,9 +30,13 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=settings.cors_origin_regex,
+    allow_origins=[
+        "http://localhost:5173",
+        "https://telcochurn-mlops.vercel.app",
+    ],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -42,8 +46,11 @@ app.add_middleware(
 @app.middleware("http")
 async def request_logging(request: Request, call_next):
     started_at = time.perf_counter()
+
     response = await call_next(request)
+
     duration_ms = (time.perf_counter() - started_at) * 1000
+
     logger.info(
         "%s %s -> %s %.2fms",
         request.method,
@@ -51,12 +58,18 @@ async def request_logging(request: Request, call_next):
         response.status_code,
         duration_ms,
     )
+
     return response
 
 
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception):
-    logger.exception("Unhandled error for %s %s", request.method, request.url.path)
+    logger.exception(
+        "Unhandled error for %s %s",
+        request.method,
+        request.url.path,
+    )
+
     return JSONResponse(
         status_code=500,
         content={
